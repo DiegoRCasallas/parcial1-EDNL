@@ -57,7 +57,13 @@ document.getElementById('removeEdge').onclick = function () {
     var fromNodeId = prompt('Ingrese el nombre del nodo de origen:');
     var toNodeId = prompt('Ingrese el nombre del nodo destino:');
     var edgeId = null;
-    var allEdges = edges.get();
+    var allEdges = edges.get();  
+    /* Este bloque de código es un bucle que itera sobre todas las aristas del grafo para encontrar una arista específica
+    que conecte dos nodos especificados por `fromNodeId` y `toNodeId`. Si se encuentra una arista de este tipo
+    su ID se almacena en la variable `edgeId`, y entonces esa arista se elimina del grafo utilizando
+    edges.remove({ id: edgeId })`. Si no se encuentra ninguna arista que conecte los nodos especificados, se muestra una alerta
+    indicando que no hay conexión entre esos nodos. */
+
     for (var i = 0; i < allEdges.length; i++) {
         if (allEdges[i].from === fromNodeId && allEdges[i].to === toNodeId) {
             edgeId = allEdges[i].id;
