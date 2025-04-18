@@ -3,24 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interacción con Nodos</title>
+    <title>Gestión de Nodos Interactivos</title>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
     <div class="container">
         <h1>Gestión de Nodos Interactivos</h1>
         <p>PARCIAL_1</p>
         <div id="mynetwork"></div>
+
         <div class="controls">
             <button id="addNode" class="btn">➕ Añadir Nodo</button>
+            <button id="editNode" class="btn">✏️ Editar Nodo</button>
             <button id="removeNode" class="btn">❌ Eliminar Nodo</button>
             <button id="addEdge" class="btn">🔗 Añadir Arista</button>
             <button id="removeEdge" class="btn">✂️ Eliminar Arista</button>
             <button id="prerequisites" class="btn">📌 Ver Prerrequisitos</button>
             <button id="postrequisites" class="btn">📍 Ver Postrequisitos</button>
+            <button id="adjacencyMatrix" class="btn">📊 Matriz de Adyacencia</button>
+            <button id="incidenceMatrix" class="btn">🧮 Matriz de Incidencia</button>
+            <button id="shortestPath" class="btn">🗺️ Ruta Mínima (Dijkstra)</button>
+            <button id="criticalPath" class="btn">🚩 Ruta Crítica</button>
         </div>
+
+        <div id="output"></div>
+
         <p>Estructuras de datos no lineales - Diego Casallas</p>
     </div>
     <script src="script.js"></script>

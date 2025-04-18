@@ -1,4 +1,3 @@
-/* Estilos globales */
 body {
     font-family: 'Poppins', sans-serif;
     background: #FAFFC5;
@@ -12,17 +11,15 @@ body {
     text-align: center;
 }
 
-/* Contenedor principal */
 .container {
     width: 90%;
-    max-width: 600px;
+    max-width: 700px;
     background: #A9BFA8;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Título y descripción */
 h1 {
     font-size: 24px;
     color: #3A3960;
@@ -34,7 +31,6 @@ p {
     color: #5E686D;
 }
 
-/* Contenedor de la red */
 #mynetwork {
     width: 100%;
     height: 350px;
@@ -44,12 +40,24 @@ p {
     margin-bottom: 20px;
 }
 
-/* Estilos de los botones */
+#output {
+    margin-top: 20px;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
 .controls {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
+    margin-bottom: 10px;
 }
 
 .btn {
@@ -71,7 +79,6 @@ p {
     transform: translateY(-2px);
 }
 
-/* Responsividad */
 @media (max-width: 600px) {
     .container {
         padding: 15px;
@@ -86,11 +93,15 @@ p {
     }
 
     #mynetwork {
-        height: 250px; /* Reducimos la altura en móviles */
+        height: 250px;
     }
 
     .btn {
         font-size: 12px;
         padding: 10px 12px;
+    }
+
+    #output {
+        font-size: 12px;
     }
 }
