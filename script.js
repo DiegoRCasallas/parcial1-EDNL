@@ -190,3 +190,47 @@ document.getElementById('criticalPath').onclick = function () {
     const criticalPath = allPaths[maxCostIndex];
     alert(`Ruta Crítica: ${criticalPath.join(' -> ')}\nDuración Total: ${pathCosts[maxCostIndex]}`);
 };
+
+// Guardar Grafo
+document.getElementById('saveGraph').onclick = function () {
+    const graphData = {
+        nodes: nodes.get(),
+        edges: edges.get()
+    };
+    const blob = new Blob([JSON.stringify(graphData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'grafo.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Cargar Grafo
+document.getElementById('loadGraph').onclick = function () {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const graphData = JSON.parse(e.target.result);
+                    nodes.clear();
+                    edges.clear();
+                    nodes.add(graphData.nodes);
+                    edges.add(graphData.edges);
+                    alert('Grafo cargado exitosamente.');
+                } catch (error) {
+                    alert('Error al cargar el archivo. Asegúrese de que sea un archivo JSON válido.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+};
