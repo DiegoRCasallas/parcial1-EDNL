@@ -19,14 +19,18 @@ function getRandomLightColor() {
 document.getElementById('addNode').onclick = function () {
     var nodeId = prompt('Ingrese el nombre del nodo:');
     if (nodeId) {
-        var randomColor = getRandomLightColor();
-        nodes.add({
-            id: nodeId,
-            label: nodeId,
-            color: { border: randomColor, background: randomColor },
-            font: { color: '#000000' },
-            shape: 'circle',
-        });
+        if (nodes.get(nodeId)) {
+            alert('El nodo ya existe.');
+        } else {
+            var randomColor = getRandomLightColor();
+            nodes.add({
+                id: nodeId,
+                label: nodeId,
+                color: { border: randomColor, background: randomColor },
+                font: { color: '#000000' },
+                shape: 'circle',
+            });
+        }
     }
 };
 
@@ -37,22 +41,45 @@ document.getElementById('editNode').onclick = function () {
 
     var newId = prompt('Ingrese el nuevo ID del nodo:');
     if (newId && newId !== oldId) {
-        var current = nodes.get(oldId);
-        nodes.remove({ id: oldId });
-        edges.forEach(edge => {
+        if (nodes.get(newId)) return alert('El nuevo ID ya existe.');
+
+        // Actualizar nodo
+        nodes.update({ id: oldId, label: newId });
+
+        // Actualizar aristas relacionadas
+        edges.get().forEach(edge => {
             if (edge.from === oldId) edge.from = newId;
             if (edge.to === oldId) edge.to = newId;
+            edges.update(edge);
         });
-        nodes.add({ ...current, id: newId, label: newId });
-        data.edges = edges;
-        network.setData(data);
+
+        // Cambiar el ID del nodo
+        const updatedNode = nodes.get(oldId);
+        updatedNode.id = newId;
+        nodes.remove(oldId);
+        nodes.add(updatedNode);
+
+        alert('Nodo editado correctamente.');
+    } else {
+        alert('Operación cancelada o ID no válido.');
     }
 };
 
 // Eliminar Nodo
 document.getElementById('removeNode').onclick = function () {
     var nodeId = prompt('Ingrese el nombre del nodo a eliminar:');
-    if (nodeId) nodes.remove({ id: nodeId });
+    if (nodeId) {
+        // Eliminar aristas relacionadas
+        edges.get().forEach(edge => {
+            if (edge.from === nodeId || edge.to === nodeId) {
+                edges.remove(edge.id);
+            }
+        });
+
+        // Eliminar nodo
+        nodes.remove({ id: nodeId });
+        alert(`Nodo ${nodeId} y sus aristas han sido eliminados.`);
+    }
 };
 
 // Añadir Arista
@@ -99,7 +126,7 @@ document.getElementById('adjacencyMatrix').onclick = function () {
         const edge = edges.get().find(e => e.from === row && e.to === col);
         return edge ? edge.label : '0';
     }));
-    
+
     let output = '<b>Matriz de Adyacencia</b><br><table border="1"><tr><th></th>';
     output += nodeIds.map(n => `<th>${n}</th>`).join('') + '</tr>';
     matrix.forEach((row, i) => {
@@ -124,72 +151,42 @@ document.getElementById('incidenceMatrix').onclick = function () {
     document.getElementById('output').innerHTML = output;
 };
 
-// Dijkstra - Ruta mínima
-document.getElementById('shortestPath').onclick = function () {
-    var origen = prompt('Nodo de origen:');
-    var destino = prompt('Nodo de destino:');
-    if (!nodes.get(origen) || !nodes.get(destino)) return alert('Nodos inválidos');
-
-    const dist = {}, prev = {}, Q = new Set(nodes.getIds());
-    nodes.getIds().forEach(n => { dist[n] = Infinity; prev[n] = null });
-    dist[origen] = 0;
-
-    while (Q.size) {
-        let u = [...Q].reduce((a, b) => dist[a] < dist[b] ? a : b);
-        Q.delete(u);
-        edges.get().filter(e => e.from === u && Q.has(e.to)).forEach(e => {
-            let alt = dist[u] + parseFloat(e.label);
-            if (alt < dist[e.to]) {
-                dist[e.to] = alt;
-                prev[e.to] = u;
-            }
-        });
-    }
-
-    let path = [], u = destino;
-    while (prev[u]) {
-        path.unshift(u);
-        u = prev[u];
-    }
-    if (u === origen) path.unshift(origen);
-    else return alert('No hay ruta');
-
-    network.selectNodes(path);
-    document.getElementById('output').innerHTML = `Ruta más corta de ${origen} a ${destino}:<br><b>${path.join(' → ')}</b><br>Costo total: <b>${dist[destino]}</b>`;
-};
-
-// Ruta Crítica (DAG - Camino más largo)
+// Ruta Crítica
 document.getElementById('criticalPath').onclick = function () {
-    let inDegree = {}, order = [], dist = {}, prev = {};
-    const allNodes = nodes.getIds();
-    allNodes.forEach(n => inDegree[n] = 0);
-    edges.get().forEach(e => inDegree[e.to]++);
+    const graph = {};
+    edges.get().forEach(edge => {
+        if (!graph[edge.from]) graph[edge.from] = [];
+        graph[edge.from].push({ to: edge.to, cost: parseInt(edge.label, 10) });
+    });
 
-    let queue = allNodes.filter(n => inDegree[n] === 0);
-    queue.forEach(n => { dist[n] = 0; prev[n] = null });
+    const findCriticalPath = (node, visited = new Set(), currentPath = [], allPaths = []) => {
+        visited.add(node);
+        currentPath.push(node);
 
-    while (queue.length) {
-        let u = queue.shift();
-        order.push(u);
-        edges.get().filter(e => e.from === u).forEach(e => {
-            inDegree[e.to]--;
-            if (inDegree[e.to] === 0) queue.push(e.to);
-            let d = dist[u] + parseFloat(e.label);
-            if (d > (dist[e.to] || 0)) {
-                dist[e.to] = d;
-                prev[e.to] = u;
+        if (!graph[node]) {
+            allPaths.push([...currentPath]);
+        } else {
+            for (let edge of graph[node]) {
+                if (!visited.has(edge.to)) {
+                    findCriticalPath(edge.to, visited, currentPath, allPaths);
+                }
             }
-        });
-    }
+        }
 
-    let endNode = order.reduce((a, b) => dist[a] > dist[b] ? a : b);
-    let path = [], u = endNode;
-    while (prev[u]) {
-        path.unshift(u);
-        u = prev[u];
-    }
-    if (path.length) path.unshift(u);
+        currentPath.pop();
+        visited.delete(node);
+        return allPaths;
+    };
 
-    network.selectNodes(path);
-    document.getElementById('output').innerHTML = `Ruta crítica:<br><b>${path.join(' → ')}</b><br>Duración total: <b>${dist[endNode]}</b>`;
+    const allPaths = findCriticalPath(nodes.getIds()[0]);
+    const pathCosts = allPaths.map(path =>
+        path.slice(1).reduce((acc, node, i) => {
+            const edge = edges.get().find(e => e.from === path[i] && e.to === node);
+            return acc + (edge ? parseInt(edge.label, 10) : 0);
+        }, 0)
+    );
+
+    const maxCostIndex = pathCosts.indexOf(Math.max(...pathCosts));
+    const criticalPath = allPaths[maxCostIndex];
+    alert(`Ruta Crítica: ${criticalPath.join(' -> ')}\nDuración Total: ${pathCosts[maxCostIndex]}`);
 };
