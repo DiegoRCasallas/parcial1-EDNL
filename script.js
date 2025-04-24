@@ -34,6 +34,41 @@ document.getElementById('addNode').onclick = function () {
     }
 };
 
+// Dijkstra - Ruta mínima
+document.getElementById('shortestPath').onclick = function () {
+    var origen = prompt('Nodo de origen:');
+    var destino = prompt('Nodo de destino:');
+    if (!nodes.get(origen) || !nodes.get(destino)) return alert('Nodos inválidos');
+
+    const dist = {}, prev = {}, Q = new Set(nodes.getIds());
+    nodes.getIds().forEach(n => { dist[n] = Infinity; prev[n] = null });
+    dist[origen] = 0;
+
+    while (Q.size) {
+        let u = [...Q].reduce((a, b) => dist[a] < dist[b] ? a : b);
+        Q.delete(u);
+        edges.get().filter(e => e.from === u && Q.has(e.to)).forEach(e => {
+            let alt = dist[u] + parseFloat(e.label);
+            if (alt < dist[e.to]) {
+                dist[e.to] = alt;
+                prev[e.to] = u;
+            }
+        });
+    }
+
+    let path = [], u = destino;
+    while (prev[u]) {
+        path.unshift(u);
+        u = prev[u];
+    }
+    if (u === origen) path.unshift(origen);
+    else return alert('No hay ruta');
+
+    network.selectNodes(path);
+    document.getElementById('output').innerHTML = `Ruta más corta de ${origen} a ${destino}:<br><b>${path.join(' → ')}</b><br>Costo total: <b>${dist[destino]}</b>`;
+};
+
+
 // Editar Nodo
 document.getElementById('editNode').onclick = function () {
     var oldId = prompt('Ingrese el ID del nodo a editar:');
